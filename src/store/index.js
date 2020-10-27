@@ -1,38 +1,51 @@
-import Vue from "vue";
-import Vuex from "vuex";
+import Vue from 'vue';
+import Vuex from 'vuex';
+import createPersistedState from 'vuex-persistedstate';
 
 Vue.use(Vuex);
 
 export default new Vuex.Store({
+  plugins: [createPersistedState()],
   state: {
+    isLoggedIn: false,
     user: {
-      isLoggedIn: false,
       data: null
     }
   },
   getters: {
-    user(state){
-      return state.user
+    user(state) {
+      return state.user;
+    },
+    userId(state) {
+      if (state.user.data) {
+        return state.user.data.userId;
+      }
+      return null;
+    },
+    isLoggedIn(state) {
+      console.info(state.isLoggedIn);
+      return state.isLoggedIn;
     }
   },
   mutations: {
     SET_LOGGED_IN(state, value) {
-      state.user.isLoggedIn = value;
+      state.isLoggedIn = value;
     },
     SET_USER(state, data) {
       state.user.data = data;
-    }
+    },
   },
   actions: {
     fetchUser({ commit }, user) {
-      commit("SET_LOGGED_IN", user !== null);
+      commit('SET_LOGGED_IN', user !== null);
       if (user) {
-        commit("SET_USER", {
+        commit('SET_USER', {
           email: user.email,
-          firstName: user.firstName
+          displayName: user.displayName,
+          userId: user.uid
         });
       } else {
-        commit("SET_USER", null);
+        commit('SET_USER', null);
       }
     }
   }

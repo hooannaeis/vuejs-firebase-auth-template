@@ -1,33 +1,47 @@
 <template>
-  <div>
-    <h1>log in</h1>
-    <div>
-      <input type="email" v-model="email" placeholder="email@domain.com" />
-      <input type="password" v-model="password" placeholder="password" />
-      <button @click="login">sign up</button>
-    </div>
-    <div>
-      dont have an account?
-      <router-link to="/sign-up">sign up</router-link>
+  <div class="cont--fullh display--flex">
+    <div class="card card--phone">
+      <h2 class="txt--fancy txt--primary">Login</h2>
+      <p class="txt--warning" v-if="errors.authFail">{{ errors.authFail }}</p>
+      <div class="display--flex display--flexh">
+        <input type="email" required v-model="email" placeholder="email@domain.com" />
+        <input
+          type="password"
+          required
+          v-model="password"
+          placeholder="password"
+          @keyup.enter="login"
+        />
+        <button class="btn btn--primary" @click="login">Log In</button>
+      </div>
+      <div class="txt--small">
+        don't have an account?
+        <router-link to="/sign-up">sign up</router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import firebase from 'firebase';
+import { firebase } from '@firebase/app';
+import '@firebase/auth';
 
 export default {
   data() {
     return {
       email: '',
-      password: ''
+      password: '',
+      errors: {
+        authFail: null
+      }
     };
   },
   methods: {
-    login: function() {
+    login: async function() {
+      this.errors.authFail = null;
       let self = this;
 
-      firebase
+      let user = await firebase
         .auth()
         .setPersistence(firebase.auth.Auth.Persistence.SESSION)
         .then(function() {
@@ -37,28 +51,19 @@ export default {
           // ...
           // New sign-in will be persisted with session persistence.
 
-          firebase
-            .auth()
-            .signInWithEmailAndPassword(self.email, self.password)
-            .then(
-              user => {
-                self.$router.replace('workbench');
-              },
-              err => {
-                alert('Oops. ' + err.message);
-              }
-            );
+          return firebase.auth().signInWithEmailAndPassword(self.email, self.password);
         })
-        .catch(function(error) {
+        .catch(function(err) {
           // Handle Errors here.
-          var errorCode = error.code;
-          var errorMessage = error.message;
-          console.log(errorMessage);
+          self.errors.authFail = 'Oops. ' + err.message;
+          console.warn(err.message);
         });
+      if (user) {
+        this.$router.push({ path: 'workbench' });
+      }
     }
   }
 };
 </script>
 
-<style>
-</style>
+<style></style>

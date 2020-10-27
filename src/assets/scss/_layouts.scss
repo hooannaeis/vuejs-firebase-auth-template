@@ -1,0 +1,61 @@
+.pos {
+  &--rel {
+    position: relative;
+  }
+  &--abs {
+    position: absolute;
+  }
+  &--fix {
+    position: fixed;
+  }
+  &--tl {
+    top: 0.1rem;
+    left: 0.1rem;
+  }
+  &--tr {
+    top: 0.5rem;
+    right: 0.5rem;
+  }
+  &--bm {
+    bottom: 0;
+    left: 50%;
+    transform: translate(-50%, -50%);
+  }
+  &--center {
+    top: 0;
+    bottom: 0;
+    right: 0;
+    left: 0;
+  }
+}
+
+.display {
+  &--flex {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    justify-content: space-around;
+  }
+  &--flexh {
+    flex-direction: column;
+  }
+}
+
+.cont {
+  &--fullh {
+    min-height: 75vh;
+    @media (max-width: $breakPhone) {
+      min-height: 50vh;
+    }
+  }
+}
+
+.card {
+  background-color: $colorBright;
+  color: $colorDark;
+  padding: 2rem;
+  margin: auto;
+  &--phone {
+    max-width: $breakPhone;
+  }
+}

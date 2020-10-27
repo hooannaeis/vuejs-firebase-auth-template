@@ -1,0 +1,18 @@
+.txt {
+  &--primary {
+    color: $colorPrimary;
+  }
+  &--Warning {
+    color: $colorWarning;
+  }
+  &--small {
+    font-size: 0.7rem;
+  }
+  &--large {
+    font-size: 1.5rem;
+    font-weight: bold;
+  }
+  &--fancy {
+    font-family: 'Lobster', cursive;
+  }
+}

@@ -1,0 +1,16 @@
+@import url('https://fonts.googleapis.com/css2?family=Lobster&family=Ubuntu+Mono:wght@400;700&display=swap');
+@import 'variables';
+@import 'text';
+@import 'layouts';
+@import 'animations';
+@import 'buttons';
+@import 'defaults';
+
+#app {
+  background: $colorDark;
+  text-align: center;
+  margin: auto;
+  min-height: 98vh;
+  max-width: $breakDesktop;
+  overflow-x: hidden;
+}

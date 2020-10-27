@@ -1,0 +1,23 @@
+$colorPrimary: #2BA84A;
+$colorPrimaryDark: darken($colorPrimary, 8%);
+
+$colorWarning: #EE6C4D;
+$colorWarningDark: darken($colorWarning, 8%);
+
+$colorDark: #040F0F;
+$colorDarkDark: darken($colorDark, 8%);
+$colorDarkBright: lighten($colorDark, 4%);
+
+$colorBright: #FCFFFC;
+$colorBrightDark: darken($colorBright, 8%);
+$colorBrightBright: lighten($colorBright, 8%);
+
+$gradientPrimary: linear-gradient(to bottom left, $colorPrimaryDark, $colorPrimary);
+$gradientPrimaryBright: linear-gradient(to top left, $colorBright 90%, $colorPrimary 100%);
+$gradientWarning: linear-gradient(-90deg, $colorWarning, $colorWarningDark);
+$gradientBright: linear-gradient(-90deg, $colorBright, $colorBrightDark);
+$gradientDark: linear-gradient(to bottom, $colorDarkBright 25%, $colorDarkDark 75%);
+
+$breakPhone: 480px;
+$breakTablet: 768px;
+$breakDesktop: 1000px;

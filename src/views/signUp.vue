@@ -1,61 +1,178 @@
 <template>
-  <div>
-    <h1>sign up</h1>
-    <div>
-      <input type="email" v-model="email" placeholder="email@domain.com" />
-      <input type="text" v-model="displayName" placeholder="First name" />
-      <input type="password" v-model="password" placeholder="password" />
-      <button @click="signUp">sign up</button>
-    </div>
-    <div>
-      have an account?
-      <router-link to="log-in">log in</router-link>
+  <div class="cont--fullh display--flex">
+    <div class="card card--phone">
+      <h2>Sign up</h2>
+      <div>
+        <div>
+          <p ass="txt--warning" v-if="errors.email">{{ errors.email }}</p>
+          <input
+            required
+            type="email"
+            v-model="email"
+            ref="emailInput"
+            placeholder="email@domain.com"
+            :pattern="regexPatterns.email"
+          />
+        </div>
+        <input required type="text" v-model="firstName" placeholder="First name" ref="nameInput" />
+        <div>
+          <p ass="txt--warning" v-if="errors.password">{{ errors.password }}</p>
+          <input
+            required
+            type="password"
+            v-model="password"
+            ref="passwordInput"
+            placeholder="password"
+          />
+        </div>
+        <div>
+          <p ass="txt--warning" v-if="errors.confirmPassword">
+            {{ errors.confirmPassword }}
+          </p>
+          <input
+            required
+            type="password"
+            ref="confirmPasswordInput"
+            v-model="confirmPassword"
+            placeholder="confirm password"
+            @keyup.enter="signUp"
+          />
+        </div>
+        <ul class="display--flex">
+          <li
+            v-for="(rule, index) in passwordRules"
+            :key="index"
+            v-bind:class="{ 'txt--primary': rule.isValid }"
+          >
+            <div :ref="`label_${index}`">
+              <div class="txt--large">{{ rule.label }}</div>
+              <div class="txt--small">{{ rule.subtitle }}</div>
+            </div>
+          </li>
+        </ul>
+        <button class="btn btn--primary txt--fancy" @click="signUp">Sign Up</button>
+      </div>
+      <div class="txt--small">
+        have an account?
+        <router-link to="/log-in">log in</router-link>
+      </div>
     </div>
   </div>
 </template>
 
 <script>
-import firebase from 'firebase';
+import { firebase } from '@firebase/app';
+import '@firebase/auth';
+
+const upperCaseRegex = /[A-Z]/;
+const lowerCaseRegex = /[a-z]/;
+const specialCharacterRegex = /[!@#\$%\^&\*]/;
+
+const validationRules = [
+  {
+    label: '8+',
+    subtitle: 'characters',
+    validate: (passwordInput, confirmPassInput) => passwordInput.length >= 8
+  },
+  {
+    label: '#',
+    subtitle: 'special',
+    validate: (passwordInput, confirmPassInput) => specialCharacterRegex.test(passwordInput)
+  },
+  {
+    label: 'A',
+    subtitle: 'uppercase',
+    validate: (passwordInput, confirmPassInput) => upperCaseRegex.test(passwordInput)
+  },
+  {
+    label: '=',
+    subtitle: 'confirmed',
+    validate: (passwordInput, confirmPassInput) => passwordInput === confirmPassInput
+  }
+];
 
 export default {
   data() {
     return {
       email: '',
-      displayName: '',
-      password: ''
+      firstName: '',
+      password: '',
+      confirmPassword: '',
+      regexPatterns: {
+        email: '.*@.*',
+        password: '^(?=.*[A-Z].*)(?=.*[0-9].*)(?=.*[a-z].*).{8,}$'
+      },
+      errors: {
+        email: null,
+        password: null,
+        confirmPassword: null,
+        authFail: null
+      }
     };
+  },
+  computed: {
+    passwordRules() {
+      return validationRules.map(rule => {
+        return {
+          label: rule.label,
+          subtitle: rule.subtitle,
+          isValid: rule.validate(this.password, this.confirmPassword),
+          labelWidth: rule.labelWidth
+        };
+      });
+    }
   },
   methods: {
     signUp: function() {
+      console.log('chekcing inputs first');
+      // FORM VALIDATION
+      const emailRegex = new RegExp(this.regexPatterns.email);
+      if (!emailRegex.test(this.email)) {
+        this.errors.email = 'invalid email';
+        this.$refs['emailInput'].focus();
+      } else {
+        this.errors.email = null;
+      }
+
+      const passRegex = new RegExp(this.regexPatterns.password);
+      if (!passRegex.test(this.password)) {
+        this.$refs['passwordInput'].focus();
+        this.errors.password = 'observe password requirements below';
+      } else {
+        this.errors.password = null;
+      }
+      if (this.password != this.confirmPassword) {
+        this.$refs['confirmPasswordInput'].focus();
+        this.errors.confirmPassword = "passwords don't match.";
+      } else {
+        this.errors.confirmPassword = null;
+      }
+
+      if (this.errors.email || this.errors.password || this.errors.confirmPassword) {
+        return;
+      }
+      // FORM VALIDATION
+
       let self = this;
+      this.errors.authFail = null;
 
       firebase
         .auth()
-        .setPersistence(firebase.auth.Auth.Persistence.SESSION)
-        .then(function() {
-          // Existing and future Auth states are now persisted in the current
-          // session only. Closing the window would clear any existing state even
-          // if a user forgets to sign out.
-          // ...
-          // New sign-in will be persisted with session persistence.
-
-          firebase
-            .auth()
-            .createUserWithEmailAndPassword(self.email, self.password)
-            .then(data => {
-              data.user
-                .updateProfile({
-                  displayName: self.displayName
-                })
-                .then(
-                  user => {
-                    self.$router.replace('workbench');
-                  },
-                  err => {
-                    alert('Oops. ' + err.message);
-                  }
-                );
-            });
+        .createUserWithEmailAndPassword(self.email, self.password)
+        .then(data => {
+          data.user
+            .updateProfile({
+              firstName: self.firstName
+            })
+            .then(
+              user => {
+                self.$router.push({ path: 'workbench' });
+              },
+              err => {
+                self.errors.authFail = 'Oops. ' + err.message;
+                console.warn(err.message);
+              }
+            );
         })
         .catch(function(error) {
           // Handle Errors here.
@@ -68,5 +185,4 @@ export default {
 };
 </script>
 
-<style>
-</style>
+<style></style>

@@ -1,10 +1,6 @@
-import firebase from 'firebase';
 import Vue from 'vue';
-import store from '../store'
+import store from '../store';
 import VueRouter from 'vue-router';
-
-import Home from '../views/Home.vue';
-import { install } from 'vuex';
 
 Vue.use(VueRouter);
 
@@ -12,7 +8,7 @@ const routes = [
   {
     path: '/',
     name: 'Home',
-    component: Home
+    component: () => import(/* webpackChunkName: "about" */ '../views/Home.vue')
   },
   {
     path: '/sign-up',
@@ -35,6 +31,11 @@ const routes = [
       requiresAuth: true
     }
   },
+  {
+    path: '*',
+    name: '404',
+    component: () => import(/* webpackChunkName: "about" */ '../views/error.vue')
+  }
 ];
 
 const router = new VueRouter({
@@ -43,14 +44,19 @@ const router = new VueRouter({
   routes
 });
 
-router.beforeEach((to, from, next) => {
-  const isLoggedIn = Boolean(store.getters.user);
+router.beforeEach(async (to, from, next) => {
+  const isLoggedIn = store.state.isLoggedIn;
+  console.info('currentUser', isLoggedIn);
   const requiresAuth = to.matched.some(record => record.meta.requiresAuth);
-  
-  console.log(isLoggedIn, requiresAuth)
 
-  if (requiresAuth && !isLoggedIn) next('/log-in');
-  else next();
+  document.title = to.name;
+  if (to.name === 'Log In' && isLoggedIn) {
+    next('/workbench');
+  }
+  if (requiresAuth && !isLoggedIn) {
+    console.log('not logged in, redirecting...');
+    next('/log-in');
+  } else next();
 });
 
 export default router;
